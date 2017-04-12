@@ -10,9 +10,20 @@ doc.html <- htmlTreeParse('http://gutenberg.net.au/ebooks02/0201091h.html',
 
 library(dplyr)
 # Separate into pargaraphs, replace linebreaks and return characters
-doc.text <-  unlist(xpathApply(doc.html, '//p', xmlValue)) %>%
-  gsub('\\n', ' ', doc.text) %>%
-  gsub('\r', '', doc.text)
+all.text <-  unlist(xpathApply(doc.html, '//p', xmlValue)) %>%
+  gsub('\\n', ' ', .) %>%
+  gsub('\r', '', .)
+
+# Non-spoken passages are in italics; should have 40 paragraphs
+italic.text <- unlist(xpathApply(doc.html, '//p//i', xmlValue)) %>%
+  gsub('\\n', ' ', .) %>%
+  gsub('\r', '', .)
+# Look at source--there's a </i><i> in the middle of a paragraph here
+italic.text[6] <- paste(italic.text[6], italic.text[7])
+italic.text[7] <- NA
+# Ouch, this one is even more of a mess
+italic.text[31] <- paste(italic.text[31:35], collapse=" ")
+italic.text[32:35] <- NA
 
 # Find indices with weird A circumflex
 bad.lines <- which(doc.text == doc.text[1])
@@ -32,15 +43,16 @@ waves.text <- waves.text[1:(length(waves.text)-2)]
 # (almost as if Woolf had future programmers in mind...)
 
 library(stringr)
-name_locs <- str_locate(pattern = "\' said [A-Z][a-z]*. \'", waves.text)
+name_locs <- str_locate(pattern = "\' said [A-Z][a-z]*[:punct:]", waves.text)
 id <- sapply(1:length(waves.text), 
              function(i) substr(waves.text[i], 
                                 name_locs[i, 1], 
                                 name_locs[i, 2])) %>%
   gsub("\' said ", "", .) %>%
-  gsub(". \'", "", .)
+  gsub("[[:punct:]]", "", .)
 
-waves.passages <- grep("^[^\']", waves.text)
+waves.passages <- which(waves.text %in% italic.text)
+
 id[waves.passages] <- "WAVES" 
 curr.speaker <- "WAVES"
 # How we deal with multi-paragraph quotes from same speaker
@@ -49,7 +61,7 @@ for(i in 1:length(id)){
   else id[i] <- curr.speaker
 }
 
-waves.text <- gsub("\' said [A-Z][a-z]*. \'", " ", waves.text)
+waves.text <- gsub("\' said [A-Z][a-z]*[[:punct:]][\']*", " ", waves.text)
 
 
 # 3. Turn into dataset with word counts for each excerpt
