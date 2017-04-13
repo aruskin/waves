@@ -26,8 +26,8 @@ italic.text[31] <- paste(italic.text[31:35], collapse=" ")
 italic.text[32:35] <- NA
 
 # Find indices with weird A circumflex
-bad.lines <- which(doc.text == doc.text[1])
-waves.text <- doc.text[-bad.lines]
+bad.lines <- which(all.text == all.text[1])
+waves.text <- all.text[-bad.lines]
 
 #Still have some Project Gutenberg related text in there at beginning and end
 head(waves.text)
@@ -76,8 +76,8 @@ waves.text.words <- lapply(waves.text, tokenize_words) %>%
     x$Var1 <- NULL
     as.data.frame(t(x))
   }) %>%
-  rbind.fill
+  bind_rows
 
-waves.text.words$speaker <- id
-waves.text.words$id <- paste0(id, 1:length(id))
+waves.text.words$SPEAKER <- id
+waves.text.words$ID <- paste0(id, 1:length(id))
 
