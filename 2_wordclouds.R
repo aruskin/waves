@@ -1,6 +1,7 @@
 library(wordcloud)
 library(RColorBrewer)
 library(tokenizers)
+library(dplyr)
 
 # Assume the only non-word frequency column in word.matrix is 
 # SPEAKER
@@ -13,7 +14,7 @@ getCharacterCloud <- function(char.name, word.matrix, exclude=NULL,
   char.words <- colSums(x = char.rows, na.rm=TRUE) %>%
     .[!(names(.) %in% exclude)]
   wordcloud(names(char.words), char.words, scale, min.freq, max.words, 
-            colors=colors)
+            random.order=FALSE, colors=colors)
 }
 
 ##################
@@ -32,9 +33,12 @@ pal <- brewer.pal(6,"BuGn") %>%
 
 getCharacterCloud("Rhoda", waves.text.words[-ncol(waves.text.words)], 
                   stopwds, 100, pal)
+
+png("RhodaWordCloud_test.png")
 getCharacterCloud("Rhoda", waves.text.words[-ncol(waves.text.words)], 
                   c(stopwds, pronouns), scale=c(4, .5), max.words=100, 
                   colors=pal)
+dev.off()
 
 
 
