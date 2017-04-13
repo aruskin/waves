@@ -2,6 +2,7 @@ library(wordcloud)
 library(RColorBrewer)
 library(tokenizers)
 library(dplyr)
+library(tm)
 
 # Assume the only non-word frequency column in word.matrix is 
 # SPEAKER
@@ -19,29 +20,25 @@ getCharacterCloud <- function(char.name, word.matrix, exclude=NULL,
 
 ##################
 
-charNames <- c("bernard", "louis", "neville", "jinny", "rhoda", "susan", 
-               "percival")
-
-pronouns <-c("i", "me", "my", "you", "your", "yours", "she", "her", "hers",
-             "he", "his", "him", "we", "our", "ours", "they", "their", 
-             "theirs", "us", "them")
-
-stopwds <- tokenizers::stopwords("en")
+# so many ways to define stopwords
+# which do we like best?
+stopwds1 <- tokenizers::stopwords("en")
+stopwds2 <- tm::stopwords("en")
+stopwds3 <- tm::stopwords("SMART")
 
 pal <- brewer.pal(6,"BuGn") %>%
   .[-(1:3)]
-
-getCharacterCloud("Rhoda", waves.text.words[-ncol(waves.text.words)], 
-                  stopwds, 100, pal)
-
 png("RhodaWordCloud_test.png")
 getCharacterCloud("Rhoda", waves.text.words[-ncol(waves.text.words)], 
-                  c(stopwds, pronouns), scale=c(4, .5), max.words=100, 
+                  c(stopwds3), scale=c(4, .5), max.words=100, 
                   colors=pal)
 dev.off()
 
-
-
-
-
+pal2 <- brewer.pal(6,"OrRd") %>%
+  .[-(1:2)]
+png("JinnyWordCloud_test.png")
+getCharacterCloud("Jinny", waves.text.words[-ncol(waves.text.words)], 
+                  c(stopwds3), scale=c(4, .5), max.words=100, 
+                  colors=pal2)
+dev.off()
   
